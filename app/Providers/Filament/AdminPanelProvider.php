@@ -130,7 +130,7 @@ class AdminPanelProvider extends PanelProvider
                         ->collapsed()
                         ->icon('https://img.icons8.com/color/96/security-configuration.png'),
                 ])
-            // ->databaseNotifications()
+            ->databaseNotifications()
             ->favicon(asset('images/favicon.png'))
             ->brandName('Kansai')
             ->brandLogo(asset('images/logo.jpeg'))
