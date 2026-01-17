@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
 use DateTime;
+use Filament\Support\RawJs;
 
 class EmployeeResource extends Resource
 {
@@ -101,12 +102,30 @@ class EmployeeResource extends Resource
                         TextInput::make('weekly_salary')
                             ->required()
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(0),
                         TextInput::make('monthly_salary')
                             ->required()
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(0),
                     ])
                     ->columns(2),

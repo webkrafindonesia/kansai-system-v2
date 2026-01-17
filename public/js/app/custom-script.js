@@ -6,9 +6,20 @@ window.bcmulJS = function (num1, num2, scale = 0) {
 };
 
 window.clean_numericJS = function (value) {
-    if (value === null) {
+    if (value === null || value === "") {
         return 0;
     }
+
+    value = value.toString();
+    // 1. Hapus semua titik pemisah ribuan
+    value = value.replaceAll('.', '');
+
+    // 2. Ganti koma menjadi titik (desimal)
+    value = value.replaceAll(',', '.');
+
+    // 3. Jika ada karakter lain selain angka dan titik, hapus
+    // value = preg_replace('/[^0-9.]/', '', $numeric);
+
     return value;
 }
 

@@ -9,7 +9,7 @@ use App\Models\Assembly;
 use App\Models\Warehouse;
 use App\Services\MutationProcess;
 use Filament\Notifications\Notification;
-use App\Filament\Resources\AssemblyResource;
+use App\Filament\Resources\Assemblies\AssemblyResource;
 
 class AssemblyProcess implements ShouldQueue
 {

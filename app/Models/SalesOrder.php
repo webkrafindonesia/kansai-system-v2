@@ -92,6 +92,20 @@ class SalesOrder extends Model
         return $this->items->sum('total_price')*((100-$this->discount_company)-(100-$this->discount_sales))/100;
     }
 
+    public function getOmsetPriceAttribute()
+    {
+        if($this->discount_sales > $this->discount_company){
+            $total_price = $this->items()->sum('master_total_price');
+            $after_discount = $total_price * (100 - $this->discount_sales) / 100;
+        }
+        else{
+            $total_price = $this->items()->sum('total_price');
+            $after_discount = $total_price * (100 - $this->discount_company) / 100;
+        }
+
+        return 'Rp '.numberFormat(moneyFormat($after_discount));
+    }
+
     public function processPaid()
     {
         $this->invoice_status = "Lunas";

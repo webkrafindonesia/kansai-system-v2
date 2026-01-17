@@ -91,7 +91,16 @@ class RawMaterialResource extends Resource
                         TextInput::make('buying_price')
                             ->label('Harga Beli')
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[0-9.]+(,\d{1,5})?$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 5)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 5)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(0)
                             ->required(),
                     ])

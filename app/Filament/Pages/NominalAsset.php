@@ -116,7 +116,7 @@ class NominalAsset extends Page implements HasTable
                     // ->summarize(
                     //     Sum::make()
                     //         ->label('Total')
-                    //         ->currency('IDR')
+                    //         ->prefix('Rp ')
                     // ),
             ])
             ->groups([

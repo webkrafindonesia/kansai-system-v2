@@ -43,6 +43,7 @@ use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 use App\Filament\Resources\Assemblies\AssemblyResource;
 use App\Filament\Resources\DeliveryOrders\DeliveryOrderResource;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -89,6 +90,7 @@ class ItemsRelationManager extends RelationManager
                             ->preload()
                             ->live()
                             ->disabled(fn($operation)=>$operation=='edit')
+                            ->partiallyRenderComponentsAfterStateUpdated(['breakdowns'])
                             ->afterStateUpdated(function (?string $state, callable $set, callable $get, $record) {
                                 $article = Product::find($state);
                                 if($state != 0){
@@ -115,8 +117,8 @@ class ItemsRelationManager extends RelationManager
 
                                 $price = $get('price') ?? 0;
                                 $qty = $get('qty') ?? 0;
-                                $total = $qty * $article->selling_price;
-                                $set('total_price', (moneyFormat($total)));
+                                $total = clean_numeric($qty) * clean_numeric($article->selling_price);
+                                $set('total_price', moneyFormat($total));
                                 $set('master_price', $article->selling_price);
                                 $set('master_total_price', $total);
                             }),
@@ -133,19 +135,27 @@ class ItemsRelationManager extends RelationManager
                         TextInput::make('qty')
                             ->label('Qty')
                             ->required()
-                            ->numeric()
-                            ->live()
                             ->default(1)
-                            ->afterStateUpdated(function (?string $state, callable $set, callable $get) {
-                                $price = $get('price') ?? 0;
-                                $total = bcmul($state, clean_numeric($price), 5);
-                                $set('total_price', ($total));
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
+                            ->afterStateUpdatedJs(<<<'JS'
+                                const price = $get('price') ?? 0;
+                                const total = bcmulJS(clean_numericJS($state), clean_numericJS(price),0);
+                                $set('total_price', numberFormatJS(total));
 
-                                $master_price = $get('master_price') ?? 0;
-                                $master_total = $state * $master_price;
-                                $set('master_price', $master_price);
-                                $set('master_total_price', $master_total);
-                            }),
+                                const master_price = $get('master_price') ?? 0;
+                                const master_total = $state * master_price;
+                                $set('master_price', master_price);
+                                $set('master_total_price', master_total);
+                            JS),
                         TextInput::make('uom')
                             ->label('Satuan')
                             ->helperText('Satuan hanya bisa diedit untuk produk custom')
@@ -163,21 +173,36 @@ class ItemsRelationManager extends RelationManager
                         TextInput::make('price')
                             ->label('Harga Satuan')
                             ->required()
-                            ->live(debounce:1000)
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(0)
-                            // ->mask(RawJs::make('$money($input)'))
-                            // ->stripCharacters(',')
-                            ->afterStateUpdated(function (?string $state, callable $set, callable $get) {
-                                $qty = $get('qty') ?? 0;
-                                $total = bcmul(clean_numeric($state), $qty, 5);
-                                $set('total_price', ($total));
-                            }),
+                            ->afterStateUpdatedJs(<<<'JS'
+                                const qty = $get('qty') ?? 0;
+                                const total = bcmulJS(clean_numericJS($state), clean_numericJS(qty), 0);
+                                $set('total_price', numberFormatJS(total));
+                            JS),
                         TextInput::make('total_price')
                             ->label('Total Harga')
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->required()
                             ->default(0)
                             ->readonly(),
@@ -288,7 +313,7 @@ class ItemsRelationManager extends RelationManager
                     ->label('Total Harga')
                     ->toggleable()
                     ->currency('IDR')
-                    ->summarize(Sum::make()->currency('IDR')),
+                    ->summarize(Sum::make()->prefix('Rp ')),
                 TextColumn::make('created_at')
                     ->label('Breakdown')
                     ->toggleable()
@@ -360,11 +385,11 @@ class ItemsRelationManager extends RelationManager
                         $pdf = new GeneratePDFBreakdownItem($this->ownerRecord);
 
                         return [
-                            ViewField::make('preview')
-                                ->view('components.file-preview')
-                                ->viewData([
-                                    'fileUrl' => $pdf->getPDF(),
-                                ]),
+                            PdfViewerEntry::make('file')
+                                ->label('Working Order')
+                                ->minHeight('50svh')
+                                ->fileUrl($pdf->getPDF())
+                                ->columnSpanFull()
                         ];
                     })
                     ->visible(fn() => $this->ownerRecord->items->count()),

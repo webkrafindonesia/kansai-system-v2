@@ -13,6 +13,7 @@ use Filament\Notifications\Notification;
 use App\Services\GeneratePDFDeliveryOrder;
 use App\Services\MutationProcess;
 use App\Models\Warehouse;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 
 class ViewDeliveryOrder extends ViewRecord
 {
@@ -94,11 +95,11 @@ class ViewDeliveryOrder extends ViewRecord
                     $pdf = new GeneratePDFDeliveryOrder($this->record);
 
                     return [
-                        ViewField::make('preview')
-                            ->view('components.file-preview')
-                            ->viewData([
-                                'fileUrl' => $pdf->getPDF(),
-                            ]),
+                        PdfViewerEntry::make('file')
+                            ->label('Surat Jalan')
+                            ->minHeight('50svh')
+                            ->fileUrl($pdf->getPDF())
+                            ->columnSpanFull()
                     ];
                 })
                 ->visible(fn (): bool => !is_null($this->record->processed_at)),

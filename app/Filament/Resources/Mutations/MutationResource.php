@@ -9,9 +9,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Actions\ViewAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
@@ -34,7 +36,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class MutationResource extends Resource
 {
-    protected static ?string $recordTitleAttribute = 'id';
+    protected static ?string $recordTitleAttribute = '';
 
     protected static ?string $model = Mutation::class;
 
@@ -81,6 +83,7 @@ class MutationResource extends Resource
                             ->seconds(false)
                             ->default(now()),
                         TextInput::make('reference')
+                            ->label('Alasan')
                             ->maxLength(255),
                     ])->columns(2)
             ])
@@ -97,13 +100,18 @@ class MutationResource extends Resource
                     ->searchable(),
                 TextColumn::make('reference')
                     ->searchable(),
+                IconColumn::make('is_processed')
+                    ->label('Diproses')
+                    ->alignCenter()
+                    ->boolean(),
             ])
             ->filters([
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                ])
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

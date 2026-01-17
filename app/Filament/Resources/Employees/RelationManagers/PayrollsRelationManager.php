@@ -30,6 +30,8 @@ use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 use App\Models\EmployeeLoanRepayment;
 use App\Services\GeneratePDFPayrollSlip;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
+use Filament\Support\RawJs;
 
 class PayrollsRelationManager extends RelationManager
 {
@@ -56,7 +58,8 @@ class PayrollsRelationManager extends RelationManager
                                 'Mingguan' => 'Mingguan',
                                 'Bulanan' => 'Bulanan',
                             ])
-                            ->live(debounce: 1000)
+                            ->live()
+                            ->skipRenderAfterStateUpdated()
                             ->afterStateUpdated(function($state, callable $get, callable $set){
                                 $employee = $this->ownerRecord;
                                 if($state == 'Mingguan')
@@ -65,7 +68,7 @@ class PayrollsRelationManager extends RelationManager
                                     $salary = moneyFormat($employee->monthly_salary);
                                 else
                                     $salary = 0;
-                                $set('amount',number_format($salary, 0, ',','.'));
+                                $set('amount',numberFormat($salary, 0));
                                 $this->calculate_total_salary($get,$set);
                             })
                             ->native(false)
@@ -76,10 +79,24 @@ class PayrollsRelationManager extends RelationManager
                             ->default(now()),
                         TextInput::make('amount')
                             ->label('Nominal Gaji')
-                            ->live(debounce: 1000)
+                            ->live()
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
-                            ->afterStateUpdated(fn($state, callable $get, callable $set)=>$this->calculate_total_salary($get,$set))
+                            ->skipRenderAfterStateUpdated()
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
+                            ->afterStateUpdatedJs(<<<'JS'
+                                const total = clean_numericJS($get('amount')) - clean_numericJS($get('amount_loan_repayment'));
+
+                                $set('amount_after_loan_repayment',numberFormatJS(total,0));
+                            JS)
                             ->required(),
                     ])
                     ->columns(2),
@@ -94,12 +111,26 @@ class PayrollsRelationManager extends RelationManager
                         TextInput::make('amount_loan_repayment')
                             ->label('Pembayaran Pinjaman')
                             ->required()
-                            ->live(debounce: 1000)
+                            ->live()
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
-                            ->maxValue($remaining_loan*100)
+                            ->skipRenderAfterStateUpdated()
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
+                            ->maxValue($remaining_loan)
                             ->disabled(fn() => $remaining_loan <= 0)
-                            ->afterStateUpdated(fn($state, callable $get, callable $set)=>$this->calculate_total_salary($get,$set))
+                            ->afterStateUpdatedJs(<<<'JS'
+                                const total = clean_numericJS($get('amount')) - clean_numericJS($get('amount_loan_repayment'));
+
+                                $set('amount_after_loan_repayment',numberFormatJS(total,0));
+                            JS)
                             ->default(0),
                     ])
                     ->columns(2),
@@ -111,7 +142,16 @@ class PayrollsRelationManager extends RelationManager
                             ->label('Total Gaji')
                             ->required()
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->readOnly()
                             ->default(0)
                             ->minValue(0),
@@ -172,22 +212,22 @@ class PayrollsRelationManager extends RelationManager
                             $pdf = new GeneratePDFPayrollSlip($record);
 
                             return [
-                                ViewField::make('preview')
-                                    ->view('components.file-preview')
-                                    ->viewData([
-                                        'fileUrl' => $pdf->getPDF(),
-                                    ]),
+                                PdfViewerEntry::make('file')
+                                    ->label('Payroll Slip')
+                                    ->minHeight('50svh')
+                                    ->fileUrl($pdf->getPDF())
+                                    ->columnSpanFull()
                             ];
                         }),
-                    DeleteAction::make()
-                        ->after(function($record){
-                            $repayment = EmployeeLoanRepayment::where('employee_payroll_id',$record->id)->first();
+                    // DeleteAction::make()
+                    //     ->after(function($record){
+                    //         $repayment = EmployeeLoanRepayment::where('employee_payroll_id',$record->id)->first();
 
 
-                            if($repayment instanceof EmployeeLoanRepayment){
-                                $repayment->delete();
-                            }
-                        }),
+                    //         if($repayment instanceof EmployeeLoanRepayment){
+                    //             $repayment->delete();
+                    //         }
+                    //     }),
                     RestoreAction::make()
                         ->after(function($record){
                             $repayment = EmployeeLoanRepayment::onlyTrashed()->where('employee_payroll_id',$record->id)->first();
@@ -198,10 +238,10 @@ class PayrollsRelationManager extends RelationManager
                 ])
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                //     RestoreBulkAction::make(),
+                // ]),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query->withoutGlobalScopes([
                 SoftDeletingScope::class,
@@ -213,6 +253,6 @@ class PayrollsRelationManager extends RelationManager
         // dd(clean_numeric($get('amount')) - clean_numeric($get('amount_loan_repayment')));
         $total = clean_numeric($get('amount')) - clean_numeric($get('amount_loan_repayment'));
 
-        return $set('amount_after_loan_repayment',number_format($total,env('MONEY_DECIMAL_DIGITS'),',','.'));
+        return $set('amount_after_loan_repayment',numberFormat($total,0));
     }
 }

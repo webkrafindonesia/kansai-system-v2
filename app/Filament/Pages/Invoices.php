@@ -22,10 +22,11 @@ use App\Models\SalesOrder;
 use Filament\Support\Colors\Color;
 use App\Services\GeneratePDFInvoiceSales;
 use App\Services\GeneratePDFInvoiceCustomer;
-use App\Filament\Resources\SalesOrderResource;
+use App\Filament\Resources\SalesOrders\SalesOrderResource;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 use Filament\Notifications\Notification;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 
 class Invoices extends Page implements HasTable
 {
@@ -53,10 +54,10 @@ class Invoices extends Page implements HasTable
             ->defaultSort('invoice_no','asc')
             ->columns([
                 Split::make([
-                    TextColumn::make('index')
-                        ->rowIndex()
-                        ->suffix('.')
-                        ->grow(false),
+                    // TextColumn::make('index')
+                    //     ->rowIndex()
+                    //     ->suffix('.')
+                    //     ->grow(false),
                     Stack::make([
                         TextColumn::make('invoice_no')
                             ->sortable()
@@ -81,20 +82,8 @@ class Invoices extends Page implements HasTable
                         TextColumn::make('sales.name')
                             ->icon('https://img.icons8.com/color/96/collaborator-male--v1.png')
                             ->suffix(fn($record)=>($record->discount_sales > $record->discount_company)?' 💰':''),
-                        TextColumn::make('items')
+                        TextColumn::make('omset_price')
                             ->label('Nominal')
-                            ->formatStateUsing(function($record){
-                                if($record->discount_sales > $record->discount_company){
-                                    $total_price = $record->items()->sum('master_total_price');
-                                    $after_discount = $total_price * (100 - $record->discount_sales) / 100;
-                                }
-                                else{
-                                    $total_price = $record->items()->sum('total_price');
-                                    $after_discount = $total_price * (100 - $record->discount_company) / 100;
-                                }
-
-                                return 'Rp '.numberFormat(moneyFormat($after_discount));
-                            })
                             ->html()
                             ->icon('https://img.icons8.com/color/96/us-dollar-circled--v1.png'),
                     ]),
@@ -177,11 +166,11 @@ class Invoices extends Page implements HasTable
                             $pdf = new GeneratePDFInvoiceSales($record);
 
                             return [
-                                ViewField::make('preview')
-                                    ->view('components.file-preview')
-                                    ->viewData([
-                                        'fileUrl' => $pdf->getPDF(),
-                                    ]),
+                                PdfViewerEntry::make('file')
+                                    ->label('Invoice Sales')
+                                    ->minHeight('50svh')
+                                    ->fileUrl($pdf->getPDF())
+                                    ->columnSpanFull()
                             ];
                         })
                         ->visible(fn($record)=>!is_null($record->sales_id)),
@@ -196,11 +185,11 @@ class Invoices extends Page implements HasTable
                             $pdf = new GeneratePDFInvoiceCustomer($record);
 
                             return [
-                                ViewField::make('preview')
-                                    ->view('components.file-preview')
-                                    ->viewData([
-                                        'fileUrl' => $pdf->getPDF(),
-                                    ]),
+                                PdfViewerEntry::make('file')
+                                    ->label('Invoice Customer')
+                                    ->minHeight('50svh')
+                                    ->fileUrl($pdf->getPDF())
+                                    ->columnSpanFull()
                             ];
                         }),
                     Action::make('Sales Order')

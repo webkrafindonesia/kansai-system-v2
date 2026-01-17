@@ -77,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
             ->readOnlyRelationManagersOnResourceViewPagesByDefault(false)
             ->maxContentWidth('full')
             ->sidebarCollapsibleOnDesktop()
+            ->spa()
             ->plugins([
                 ActivityLogPlugin::make(),
                 FilamentLogManager::make(),

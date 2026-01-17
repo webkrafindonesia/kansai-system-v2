@@ -73,7 +73,7 @@ class Hutang extends Page implements HasTable
                     ->summarize(
                         Sum::make()
                             ->label('Total Hutang')
-                            ->currency('IDR')
+                            ->prefix('Rp ')
                     ),
             ])
             ->groups([

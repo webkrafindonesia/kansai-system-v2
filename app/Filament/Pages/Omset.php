@@ -92,7 +92,7 @@ class Omset extends Page implements HasTable
                     ->summarize(
                         Sum::make()
                             ->label('Total Omset')
-                            ->currency('IDR')
+                            ->prefix('Rp ')
                     ),
                 TextColumn::make('uom')
                     ->label('Satuan'),

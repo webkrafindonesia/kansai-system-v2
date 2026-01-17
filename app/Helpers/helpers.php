@@ -58,12 +58,12 @@ function return_type_match($type){
 function clean_numeric($numeric){
     if ($numeric === null) return 0;
 
-    // $numeric = (string)$numeric;
+    $numeric = (string)$numeric;
     // 1. Hapus semua titik pemisah ribuan
-    // $numeric = str_replace('.', '', $numeric);
+    $numeric = str_replace('.', '', $numeric);
 
     // // 2. Ganti koma menjadi titik (desimal)
-    // $numeric = str_replace(',', '.', $numeric);
+    $numeric = str_replace(',', '.', $numeric);
 
     // // 3. Jika ada karakter lain selain angka dan titik, hapus
     // $numeric = preg_replace('/[^0-9.]/', '', $numeric);

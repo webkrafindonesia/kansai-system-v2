@@ -39,6 +39,7 @@ use Auth;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\AssemblyProcess;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -84,6 +85,7 @@ class ItemsRelationManager extends RelationManager
                             ->searchable()
                             ->preload()
                             ->live()
+                            ->partiallyRenderComponentsAfterStateUpdated(['breakdowns'])
                             ->disabled(fn($operation)=>$operation=='edit')
                             ->afterStateUpdated(function (?string $state, callable $set, callable $get, $record) {
                                 $article = Product::find($state);
@@ -121,8 +123,16 @@ class ItemsRelationManager extends RelationManager
                         TextInput::make('qty')
                             ->label('Qty')
                             ->required()
-                            ->numeric()
-                            ->live(onBlur:true)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(1),
                         TextInput::make('uom')
                             ->label('Satuan')
@@ -244,11 +254,11 @@ class ItemsRelationManager extends RelationManager
                         $pdf = new GeneratePDFBreakdownItemAssembly($this->ownerRecord);
 
                         return [
-                            ViewField::make('preview')
-                                ->view('components.file-preview')
-                                ->viewData([
-                                    'fileUrl' => $pdf->getPDF(),
-                                ]),
+                            PdfViewerEntry::make('file')
+                                    ->label('Breakdown Raw Material')
+                                    ->minHeight('50svh')
+                                    ->fileUrl($pdf->getPDF())
+                                    ->columnSpanFull()
                         ];
                     })
                     ->visible(fn() => $this->ownerRecord->items->count() > 0),

@@ -67,8 +67,6 @@ class AssemblyResource extends Resource
                     ->schema([
                         Placeholder::make('code')
                             ->label('Kode')
-                            ->content(fn ($state): string => $state)
-                            ->columnSpanFull()
                             ->visible(fn($operation) => $operation != 'create'),
                         DatePicker::make('assembly_date')
                             ->label('Tanggal Rakitan')

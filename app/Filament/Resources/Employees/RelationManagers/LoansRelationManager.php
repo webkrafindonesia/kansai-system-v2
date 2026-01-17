@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Support\RawJs;
 
 class LoansRelationManager extends RelationManager
 {
@@ -43,11 +44,21 @@ class LoansRelationManager extends RelationManager
                         DatePicker::make('loan_date')
                             ->label('Tanggal Pinjam')
                             ->required()
-                            ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->native(false)
                             ->maxDate(now()),
                         TextInput::make('amount')
                             ->label('Nominal')
+                            ->skipRenderAfterStateUpdated()
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->required(),
                         Textarea::make('notes'),
                     ])
@@ -69,7 +80,7 @@ class LoansRelationManager extends RelationManager
                     ->summarize(
                         Sum::make()
                             ->label('Total Pinjaman')
-                            ->currency('IDR')
+                            ->prefix('Rp ')
                     ),
                 TextColumn::make('notes'),
             ])
@@ -86,14 +97,14 @@ class LoansRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
-                DeleteAction::make(),
-                RestoreAction::make(),
+                // DeleteAction::make(),
+                // RestoreAction::make(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                //     RestoreBulkAction::make(),
+                // ]),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query->withoutGlobalScopes([
                 SoftDeletingScope::class,

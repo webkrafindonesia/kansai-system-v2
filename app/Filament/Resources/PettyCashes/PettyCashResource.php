@@ -38,6 +38,7 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Support\RawJs;
 
 class PettyCashResource extends Resource implements HasActions
 {
@@ -94,7 +95,16 @@ class PettyCashResource extends Resource implements HasActions
                         TextInput::make('trx_in')
                             ->label('Pemasukan')
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(0)
                             ->requiredIf('type','Pemasukan')
                             ->minValue(0)
@@ -102,7 +112,16 @@ class PettyCashResource extends Resource implements HasActions
                         TextInput::make('trx_out')
                             ->label('Pengeluaran')
                             ->prefix('Rp')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',',precision: 0)
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
                             ->default(0)
                             ->requiredIf('type','Pengeluaran')
                             ->minValue(0)
@@ -114,10 +133,12 @@ class PettyCashResource extends Resource implements HasActions
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('file')
                             ->helperText('File yang diijinkan: jpg, jpeg, png')
+                            ->openable()
                             ->image()
                             ->collection('pettycash')
                             ->disk('minio')
-                            ->conversion('jpg'),
+                            ->conversion('jpg')
+                            ->skipRenderAfterStateUpdated(),
                     ])
             ])
             ->columns(1);

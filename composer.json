@@ -16,6 +16,7 @@
         "filament/spatie-laravel-media-library-plugin": "^4.5",
         "filipfonal/filament-log-manager": "^3.0",
         "icetalker/filament-table-repeater": "^2.0",
+        "joaopaulolndev/filament-pdf-viewer": "^2.1",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3.30",

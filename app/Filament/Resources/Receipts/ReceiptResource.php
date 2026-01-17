@@ -24,6 +24,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Services\GeneratePDFReceipt;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 
 class ReceiptResource extends Resource
 {
@@ -123,11 +124,11 @@ class ReceiptResource extends Resource
                         $pdf = new GeneratePDFReceipt();
 
                         return [
-                            ViewField::make('preview')
-                                ->view('components.file-preview')
-                                ->viewData([
-                                    'fileUrl' => $pdf->getPDF($record),
-                                ]),
+                            PdfViewerEntry::make('file')
+                                    ->label('Tanda Terima')
+                                    ->minHeight('50svh')
+                                    ->fileUrl($pdf->getPDF($record))
+                                    ->columnSpanFull()
                         ];
                     }),
             ])

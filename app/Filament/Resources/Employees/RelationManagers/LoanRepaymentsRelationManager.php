@@ -47,7 +47,7 @@ class LoanRepaymentsRelationManager extends RelationManager
                     ->summarize(
                         Sum::make()
                             ->label('Total Pelunasan')
-                            ->currency('IDR')
+                            ->prefix('Rp ')
                     ),
                 TextColumn::make('notes')
                     ->label('Catatan'),

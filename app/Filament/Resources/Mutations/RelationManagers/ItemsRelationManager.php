@@ -104,6 +104,7 @@ class ItemsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Tambah Produk')
                     ->hidden(fn (RelationManager $livewire): bool => $livewire->ownerRecord->is_processed)
                     ->modalWidth(Width::Small),
             ])

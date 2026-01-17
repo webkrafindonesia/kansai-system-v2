@@ -138,6 +138,7 @@ class AssembledGoodResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->skipRenderAfterStateUpdated()
                             ->label('Bahan Baku / Artikel')
                             ->afterStateUpdated(function (?string $state, callable $set) {
                                 if(!is_null($state)){

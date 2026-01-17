@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Support\Colors\Color;
 use App\Services\GeneratePDFInvoiceSales;
 use App\Services\GeneratePDFInvoiceCustomer;
+use Joaopaulolndev\FilamentPdfViewer\Infolists\Components\PdfViewerEntry;
 
 class ViewSalesOrder extends ViewRecord
 {
@@ -74,11 +75,11 @@ class ViewSalesOrder extends ViewRecord
                     $pdf = new GeneratePDFInvoiceSales($record);
 
                     return [
-                        ViewField::make('preview')
-                            ->view('components.file-preview')
-                            ->viewData([
-                                'fileUrl' => $pdf->getPDF(),
-                            ]),
+                        PdfViewerEntry::make('file')
+                            ->label('Invoice Sales')
+                            ->minHeight('50svh')
+                            ->fileUrl($pdf->getPDF())
+                            ->columnSpanFull()
                     ];
                 })
                 ->visible(fn($record)=>$record->deliveryOrder && !is_null($record->deliveryOrder->processed_at)),
@@ -93,11 +94,11 @@ class ViewSalesOrder extends ViewRecord
                     $pdf = new GeneratePDFInvoiceCustomer($record);
 
                     return [
-                        ViewField::make('preview')
-                            ->view('components.file-preview')
-                            ->viewData([
-                                'fileUrl' => $pdf->getPDF(),
-                            ]),
+                        PdfViewerEntry::make('file')
+                            ->label('Invoice Customer')
+                            ->minHeight('50svh')
+                            ->fileUrl($pdf->getPDF())
+                            ->columnSpanFull()
                     ];
                 })
                 ->visible(fn($record)=>$record->deliveryOrder && !is_null($record->deliveryOrder->processed_at)),
