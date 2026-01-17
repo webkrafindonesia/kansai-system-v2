@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->globalSearch(false)
             ->id('admin')
-            ->path('admin')
+            ->path(env('FILAMENT_PATH'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->domain(env('FILAMENT_DOMAIN'))
             ->login()

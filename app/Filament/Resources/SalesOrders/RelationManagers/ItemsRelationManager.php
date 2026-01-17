@@ -411,8 +411,7 @@ class ItemsRelationManager extends RelationManager
                             ->color('success')
                             ->send();
                     })
-                    ->visible(fn()=>$this->ownerRecord->items->count()
-                                && is_null($this->ownerRecord->delivery_order_id)),
+                    ->visible(fn()=>$this->ownerRecord->items->count()),
                 Action::make('Buat Surat Jalan')
                     ->color(Color::generateV3Palette('#babd006f'))
                     ->icon('https://img.icons8.com/color/96/loading-truck.png')
