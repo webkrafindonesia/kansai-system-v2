@@ -77,10 +77,10 @@ class ItemsRelationManager extends RelationManager
                                 if(!is_null($state)){
                                     $article = Product::find($state);
                                     $set('uom', $article->uom);
-                                    $set('price', moneyFormat($article->buying_price,5));
+                                    $set('price', numberFormat($article->buying_price,5));
                                     $qty = $get('qty') ?? 0;
-                                    $total = clean_numeric($article->buying_price) * clean_numeric($qty);
-                                    $set('total_price', (moneyFormat($total,5)));
+                                    $total = ($article->buying_price) * ($qty);
+                                    $set('total_price', (numberFormat($total,5)));
                                 }
                             })
                             ->default(null),

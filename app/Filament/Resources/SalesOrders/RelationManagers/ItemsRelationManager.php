@@ -95,7 +95,7 @@ class ItemsRelationManager extends RelationManager
                                 $article = Product::find($state);
                                 if($state != 0){
                                     $set('uom', $article->uom);
-                                    $set('price', moneyFormat($article->selling_price));
+                                    $set('price', numberFormat($article->selling_price));
                                 }
 
                                 $set('is_customizable', fn() => ($state != 0) ? 0 : 1);
@@ -117,8 +117,8 @@ class ItemsRelationManager extends RelationManager
 
                                 $price = $get('price') ?? 0;
                                 $qty = $get('qty') ?? 0;
-                                $total = clean_numeric($qty) * clean_numeric($article->selling_price);
-                                $set('total_price', moneyFormat($total));
+                                $total = ($qty) * ($article->selling_price);
+                                $set('total_price', numberFormat($total));
                                 $set('master_price', $article->selling_price);
                                 $set('master_total_price', $total);
                             }),
