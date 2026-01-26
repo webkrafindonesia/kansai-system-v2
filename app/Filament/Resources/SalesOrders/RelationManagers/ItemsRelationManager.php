@@ -170,6 +170,7 @@ class ItemsRelationManager extends RelationManager
                     ->schema([
                         TextInput::make('master_price')
                             ->label('Harga Satuan Pricelist')
+                            ->prefix('Rp')
                             ->rules([
                                 'regex:/^[\d.]+$/'
                             ])
@@ -184,6 +185,7 @@ class ItemsRelationManager extends RelationManager
                             ->disabled(),
                         TextInput::make('master_total_price')
                             ->label('Total Harga Pricelist')
+                            ->prefix('Rp')
                             ->rules([
                                 'regex:/^[\d.]+$/'
                             ])
