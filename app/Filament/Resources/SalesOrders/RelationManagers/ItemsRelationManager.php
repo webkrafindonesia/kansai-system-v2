@@ -119,8 +119,8 @@ class ItemsRelationManager extends RelationManager
                                 $qty = $get('qty') ?? 0;
                                 $total = ($qty) * ($article->selling_price);
                                 $set('total_price', numberFormat($total));
-                                $set('master_price', $article->selling_price);
-                                $set('master_total_price', $total);
+                                $set('master_price', numberFormat($article->selling_price));
+                                $set('master_total_price', numberFormat($total));
                             }),
                         TextInput::make('custom_name')
                             ->label('Nama Custom')
@@ -147,14 +147,14 @@ class ItemsRelationManager extends RelationManager
                                 clean_numeric($state)
                             )
                             ->afterStateUpdatedJs(<<<'JS'
-                                const price = $get('price') ?? 0;
+                                const price = clean_numericJS($get('price')) ?? 0;
                                 const total = bcmulJS(clean_numericJS($state), clean_numericJS(price),0);
                                 $set('total_price', numberFormatJS(total));
 
-                                const master_price = $get('master_price') ?? 0;
-                                const master_total = $state * master_price;
-                                $set('master_price', master_price);
-                                $set('master_total_price', master_total);
+                                const master_price = clean_numericJS($get('master_price')) ?? 0;
+                                const master_total = clean_numericJS($state) * master_price;
+                                $set('master_price', numberFormatJS(master_price));
+                                $set('master_total_price', numberFormatJS(master_total));
                             JS),
                         TextInput::make('uom')
                             ->label('Satuan')
@@ -168,8 +168,34 @@ class ItemsRelationManager extends RelationManager
                     ->description('Informasi Harga Barang')
                     ->aside()
                     ->schema([
-                        Hidden::make('master_price'),
-                        Hidden::make('master_total_price'),
+                        TextInput::make('master_price')
+                            ->label('Harga Satuan Pricelist')
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
+                            ->dehydrated(true)
+                            ->disabled(),
+                        TextInput::make('master_total_price')
+                            ->label('Total Harga Pricelist')
+                            ->rules([
+                                'regex:/^[\d.]+$/'
+                            ])
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->formatStateUsing(fn ($state) =>
+                                numberFormat((float) $state, 0)
+                            )
+                            ->dehydrateStateUsing(fn ($state) =>
+                                clean_numeric($state)
+                            )
+                            ->dehydrated(true)
+                            ->disabled(),
                         TextInput::make('price')
                             ->label('Harga Satuan')
                             ->required()
