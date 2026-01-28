@@ -22,6 +22,7 @@ use App\Models\SalesOrder;
 use Filament\Support\Colors\Color;
 use App\Services\GeneratePDFInvoiceSales;
 use App\Services\GeneratePDFInvoiceCustomer;
+use App\Services\GeneratePDFDeliveryOrder;
 use App\Filament\Resources\SalesOrders\SalesOrderResource;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 use Filament\Notifications\Notification;
