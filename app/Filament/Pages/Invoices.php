@@ -235,6 +235,12 @@ class Invoices extends Page implements HasTable
                             $invoiceCustomer = new GeneratePDFInvoiceCustomer($record);
                             $invoiceCustomer->generate(false);
 
+                            // change date in delivery order (DO should be exist if Invoice is exist)
+                            $record->deliveryOrder->delivery_date = $data['invoice_date'];
+                            $record->deliveryOrder->save();
+                            $deliveryOrderPDF = new GeneratePDFDeliveryOrder($record->deliveryOrder);
+                            $deliveryOrderPDF->generate();
+
                             Notification::make()
                                 ->title('Success')
                                 ->body('Tanggal Invoice berhasil diubah dan invoice di-generate ulang.')
