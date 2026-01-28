@@ -35,7 +35,7 @@ class GeneratePDFInvoiceSales{
             }
             else{
                 $invoiceDate = Carbon::parse($invoiceDate);
-                $dateNumber = $invoiceDate->format('y');
+                $dateNumber = $invoiceDate->format('ym');
                 $dateNumberInvoice = $invoiceDate->format('ym');
             }
 
