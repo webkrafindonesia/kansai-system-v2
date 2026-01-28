@@ -14,7 +14,7 @@ class CreatePurchase extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $date = Carbon::parse($data['date']);
-        $data['purchase_no'] = get_counter('PURC-'.$date->format('Y'),'PURC-'.$date->format('Ymd'));
+        $data['purchase_no'] = get_counter('PURC-'.$date->format('Ym'),'PURC-'.$date->format('Ymd'));
 
         return $data;
     }

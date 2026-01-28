@@ -15,7 +15,7 @@ class CreateSalesOrder extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $date = Carbon::parse($data['date']);
-        $data['salesorder_no'] = get_counter('SO-'.$date->format('Y'),'SO-'.$date->format('Ymd'));
+        $data['salesorder_no'] = get_counter('SO-'.$date->format('Ym'),'SO-'.$date->format('Ymd'));
 
         return $data;
     }

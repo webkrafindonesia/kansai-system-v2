@@ -24,7 +24,7 @@ class AutoAssemblyItem{
 
         $assembly_date = now();
         $assembly = new Assembly;
-        $assembly->code = get_counter('ASM-'.$assembly_date->format('Y'),'ASM-'.$assembly_date->format('Ymd'));
+        $assembly->code = get_counter('ASM-'.$assembly_date->format('Ym'),'ASM-'.$assembly_date->format('Ymd'));
         $assembly->assembly_date = $assembly_date;
         $assembly->status = 'Draft';
         $assembly->sales_order_id = $salesOrder->id;

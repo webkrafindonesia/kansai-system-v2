@@ -80,7 +80,7 @@ class ViewDeliveryOrder extends ViewRecord
                     $salesOrder = $record->salesOrder;
 
                     if(is_null($salesOrder->invoice_no)){
-                        $dateNumber = date('y');
+                        $dateNumber = date('ym');
                         $dateNumberInvoice = date('ym');
                         $number = get_counter('KS-R'.$dateNumber,'KS-R'.$dateNumberInvoice,6);
 

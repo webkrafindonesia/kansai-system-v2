@@ -30,7 +30,7 @@ class GeneratePDFInvoiceSales{
         $logo = base64_encode(File::get(public_path('images/logo.jpeg')));
         if(is_null($salesOrder->invoice_no) || $changeDate){
             if(is_null($invoiceDate)){
-                $dateNumber = date('y');
+                $dateNumber = date('ym');
                 $dateNumberInvoice = date('ym');
             }
             else{

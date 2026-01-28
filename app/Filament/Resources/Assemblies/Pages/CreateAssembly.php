@@ -14,7 +14,7 @@ class CreateAssembly extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $date = Carbon::parse($data['assembly_date']);
-        $data['code'] = get_counter('ASM-'.$date->format('Y'),'ASM-'.$date->format('Ymd'));
+        $data['code'] = get_counter('ASM-'.$date->format('Ym'),'ASM-'.$date->format('Ymd'));
 
         return $data;
     }
