@@ -50,6 +50,11 @@ class ProductHistory extends Model
         return $this->belongsTo(Warehouse::class);
     }
 
+    public function stock()
+    {
+        return $this->belongsTo(Stock::class, 'product_id', 'product_id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {

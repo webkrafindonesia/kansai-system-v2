@@ -59,7 +59,7 @@ class Omset extends Page implements HasTable
                     SUM(
                     CASE
                         WHEN sales_orders.discount_sales > sales_orders.discount_company THEN ((100-sales_orders.discount_sales)/100) * master_total_price
-                        ELSE ((100-sales_orders.discount_COMPANY)/100) * total_price
+                        ELSE ((100-sales_orders.discount_companyOMPANY)/100) * total_price
                     END
                     ) as discounted_total_price
                 ')
